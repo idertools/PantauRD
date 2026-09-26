@@ -1,6 +1,6 @@
 {
-  "name": "FamilyGuard",
-  "description": "Aplikasi pemantauan keselamatan keluarga dan pelacakan perangkat resmi dengan izin bilateral QR/PIN, geofencing, peringatan darurat SOS, analitik baterai, dan enkripsi end-to-end.",
+  "name": "iDerMata",
+  "description": "iDerMata - Aplikasi pemantauan keselamatan keluarga dan pelacakan perangkat real-time dengan izin resmi bilateral QR/PIN, geofencing, peringatan darurat SOS, peta langsung, dan enkripsi end-to-end.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

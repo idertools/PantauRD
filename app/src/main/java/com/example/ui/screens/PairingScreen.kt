@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,6 +41,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,9 +59,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.data.model.PairedDevice
 import com.example.ui.components.QrCodeRenderer
 import com.example.ui.theme.GuardBorderDark
 import com.example.ui.theme.GuardCardDark
+import com.example.ui.theme.GuardEmergencyRed
 import com.example.ui.theme.GuardNavyDark
 import com.example.ui.theme.GuardPrimaryCyan
 import com.example.ui.theme.GuardSafeGreen
@@ -76,6 +81,7 @@ fun PairingScreen(
     var inputPin by remember { mutableStateOf("") }
     var inputDeviceName by remember { mutableStateOf("") }
     var pairingErrorMessage by remember { mutableStateOf<String?>(null) }
+    var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
 
     Column(
         modifier = modifier
@@ -436,20 +442,76 @@ fun PairingScreen(
                             }
                         }
 
-                        Surface(
-                            color = GuardSafeGreen.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = "TERHUBUNG",
-                                color = GuardSafeGreen,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                color = GuardSafeGreen.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = "TERHUBUNG",
+                                    color = GuardSafeGreen,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            IconButton(
+                                onClick = { deviceToDelete = dev },
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .testTag("delete_device_${dev.id}")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Hapus Perangkat",
+                                    tint = Color(0xFFEF4444),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                 }
+            }
+
+            // Dialog Konfirmasi Hapus Perangkat
+            if (deviceToDelete != null) {
+                val targetDev = deviceToDelete!!
+                AlertDialog(
+                    onDismissRequest = { deviceToDelete = null },
+                    containerColor = GuardCardDark,
+                    title = {
+                        Text(
+                            text = "Hapus Perangkat Target?",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Apakah Anda yakin ingin memutuskan sambungan dan menghapus \"${targetDev.name}\" (ID: ${targetDev.id}) dari daftar pantauan? Seluruh izin akses pemantauan bilateral akan dihentikan.",
+                            color = Color(0xFFCAD5E2),
+                            fontSize = 13.sp
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                viewModel.deleteDevice(targetDev.id, targetDev.name)
+                                deviceToDelete = null
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = GuardEmergencyRed)
+                        ) {
+                            Text("Hapus", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { deviceToDelete = null }) {
+                            Text("Batal", color = Color(0xFF94A3B8))
+                        }
+                    }
+                )
             }
         }
     }

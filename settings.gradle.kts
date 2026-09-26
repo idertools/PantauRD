@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "FamilyGuard"
+rootProject.name = "iDerMata"
 
 include(":app")

@@ -63,12 +63,12 @@ enum class MainNavTab(
     val iconFilled: androidx.compose.ui.graphics.vector.ImageVector,
     val iconOutlined: androidx.compose.ui.graphics.vector.ImageVector
 ) {
-    RADAR("Radar Peta", Icons.Default.LocationOn, Icons.Outlined.LocationOn),
-    ASSIST("Layar & Bantuan", Icons.Default.ScreenShare, Icons.Outlined.ScreenShare),
-    GEOFENCE("Zona Aman", Icons.Default.Security, Icons.Outlined.Security),
-    ANALYTICS("Analitik", Icons.Default.Analytics, Icons.Outlined.Analytics),
-    PAIRING("Pairing / Izin", Icons.Default.QrCode, Icons.Outlined.QrCode),
-    LOGS("Aktivitas", Icons.Default.History, Icons.Outlined.History)
+    RADAR("Peta", Icons.Default.LocationOn, Icons.Outlined.LocationOn),
+    ASSIST("Bantuan", Icons.Default.ScreenShare, Icons.Outlined.ScreenShare),
+    GEOFENCE("Zona", Icons.Default.Security, Icons.Outlined.Security),
+    ANALYTICS("Analisis", Icons.Default.Analytics, Icons.Outlined.Analytics),
+    PAIRING("Pairing", Icons.Default.QrCode, Icons.Outlined.QrCode),
+    LOGS("Riwayat", Icons.Default.History, Icons.Outlined.History)
 }
 
 class MainActivity : ComponentActivity() {
@@ -119,9 +119,7 @@ fun MainAppContent(viewModel: FamilyGuardViewModel) {
         containerColor = GuardNavyDark,
         bottomBar = {
             NavigationBar(
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .testTag("main_bottom_nav"),
+                modifier = Modifier.testTag("main_bottom_nav"),
                 containerColor = GuardCardDark,
                 contentColor = Color.White,
                 tonalElevation = 6.dp
@@ -131,6 +129,7 @@ fun MainAppContent(viewModel: FamilyGuardViewModel) {
                     NavigationBarItem(
                         selected = isSelected,
                         onClick = { currentTab = tab },
+                        alwaysShowLabel = true,
                         icon = {
                             Icon(
                                 imageVector = if (isSelected) tab.iconFilled else tab.iconOutlined,
@@ -142,7 +141,8 @@ fun MainAppContent(viewModel: FamilyGuardViewModel) {
                             Text(
                                 text = tab.title,
                                 fontSize = 10.sp,
-                                maxLines = 1
+                                maxLines = 1,
+                                softWrap = false
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(

@@ -316,6 +316,21 @@ class FamilyGuardViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun deleteDevice(deviceId: String, deviceName: String) {
+        viewModelScope.launch {
+            repository.deleteDevice(deviceId, deviceName)
+            if (_selectedDeviceId.value == deviceId) {
+                val remaining = devices.value.filter { it.id != deviceId }
+                _selectedDeviceId.value = remaining.firstOrNull()?.id
+            }
+            triggerAlert(
+                title = "Perangkat Dihapus",
+                message = "$deviceName berhasil dihapus dari daftar pantauan.",
+                severity = "INFO"
+            )
+        }
+    }
+
     fun addSafeZone(name: String, lat: Double, lon: Double, radius: Int) {
         viewModelScope.launch {
             val zone = SafeZone(

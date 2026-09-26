@@ -140,6 +140,19 @@ class FamilyRepository(
         )
     }
 
+    suspend fun deleteDevice(deviceId: String, deviceName: String) {
+        deviceDao.deleteDevice(deviceId)
+        logEvent(
+            deviceId = deviceId,
+            deviceName = deviceName,
+            eventType = "SECURITY",
+            title = "Perangkat Dihapus",
+            description = "Perangkat $deviceName telah dihapus dari daftar pantauan dan koneksi diputuskan.",
+            severity = "WARNING",
+            plainPayload = """{"action":"DELETE_DEVICE","id":"$deviceId"}"""
+        )
+    }
+
     suspend fun updateDevice(device: PairedDevice) {
         deviceDao.updateDevice(device)
     }

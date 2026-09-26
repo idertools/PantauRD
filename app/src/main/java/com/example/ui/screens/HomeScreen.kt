@@ -24,9 +24,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -52,8 +55,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +69,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,6 +101,8 @@ fun HomeScreen(
     val isEmergencyDialogOpen by viewModel.isEmergencyDialogOpen.collectAsStateWithLifecycle()
     val isE2eeSheetOpen by viewModel.isE2eeSheetOpen.collectAsStateWithLifecycle()
 
+    var showDeleteDialogForDevice by remember { mutableStateOf<PairedDevice?>(null) }
+
     val currentDevice = devices.find { it.id == selectedId } ?: devices.firstOrNull()
 
     Column(
@@ -107,17 +118,17 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .size(8.dp)
                             .clip(CircleShape)
                             .background(GuardPrimaryCyan)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "FAMILY GUARD SECURE",
+                        text = "iDerMata SECURE",
                         color = GuardPrimaryCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -127,12 +138,16 @@ fun HomeScreen(
                 Text(
                     text = "Pelacak & Keselamatan",
                     color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 // E2EE Button
                 Surface(
                     color = Color(0xFF132235),
@@ -148,13 +163,13 @@ fun HomeScreen(
                             imageVector = Icons.Default.Lock,
                             contentDescription = "E2EE",
                             tint = GuardPrimaryCyan,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(13.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = "AES-256",
                             color = GuardPrimaryCyan,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold
                         )
@@ -165,7 +180,7 @@ fun HomeScreen(
                 IconButton(
                     onClick = onNavigateToPairing,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(34.dp)
                         .background(Color(0xFF1A2A40), RoundedCornerShape(10.dp))
                         .testTag("nav_pairing_btn")
                 ) {
@@ -173,7 +188,7 @@ fun HomeScreen(
                         imageVector = Icons.Default.QrCode,
                         contentDescription = "Pairing Perangkat",
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
@@ -299,8 +314,77 @@ fun HomeScreen(
                         }
                     }
                 }
+
+                // Tombol Tambah Target Cepat di Carousel
+                item {
+                    Surface(
+                        modifier = Modifier
+                            .clickable { onNavigateToPairing() }
+                            .testTag("quick_add_device_tab_btn"),
+                        color = Color(0xFF132235),
+                        shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GuardPrimaryCyan.copy(alpha = 0.6f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Tambah Target",
+                                tint = GuardPrimaryCyan,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Tambah Target",
+                                color = GuardPrimaryCyan,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(14.dp))
+        } else {
+            // Tampilan jika belum ada perangkat target
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = GuardCardDark),
+                border = androidx.compose.foundation.BorderStroke(1.dp, GuardBorderDark)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Belum Ada Perangkat Target",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Hubungkan perangkat orang tua atau keluarga menggunakan kode PIN atau QR izin resmi.",
+                        color = Color(0xFF8B949E),
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = onNavigateToPairing,
+                        colors = ButtonDefaults.buttonColors(containerColor = GuardPrimaryCyan),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = GuardNavyDark, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Tambah Perangkat Target Baru", color = GuardNavyDark, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+            }
         }
 
         // Live Radar Map View
@@ -551,14 +635,81 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Bantuan Jarak Jauh & Berbagi Layar (Presentasi)",
+                            text = "Bantuan Layar Jarak Jauh (Remot)",
                             color = GuardPrimaryCyan,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Tombol Hapus / Putuskan Perangkat Target
+                    OutlinedButton(
+                        onClick = { showDeleteDialogForDevice = dev },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("delete_current_device_btn"),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = Color(0xFFEF4444),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Hapus / Putuskan Target (${dev.name})",
+                            color = Color(0xFFEF4444),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
+        }
+
+        // Dialog Konfirmasi Hapus Target di HomeScreen
+        if (showDeleteDialogForDevice != null) {
+            val devToDelete = showDeleteDialogForDevice!!
+            AlertDialog(
+                onDismissRequest = { showDeleteDialogForDevice = null },
+                containerColor = GuardCardDark,
+                title = {
+                    Text(
+                        text = "Hapus Perangkat Target?",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Apakah Anda yakin ingin menghapus \"${devToDelete.name}\" (ID: ${devToDelete.id})? Seluruh koneksi pelacak, geofence, dan log aktivitas perangkat ini akan diputuskan.",
+                        color = Color(0xFFCAD5E2),
+                        fontSize = 13.sp
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.deleteDevice(devToDelete.id, devToDelete.name)
+                            showDeleteDialogForDevice = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = GuardEmergencyRed)
+                    ) {
+                        Text("Hapus Perangkat", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialogForDevice = null }) {
+                        Text("Batal", color = Color(0xFF94A3B8))
+                    }
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -652,14 +803,17 @@ fun MetricItem(
             Text(
                 text = label,
                 color = Color(0xFF8B949E),
-                fontSize = 10.sp
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = value,
                 color = Color.White,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

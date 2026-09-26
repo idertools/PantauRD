@@ -366,12 +366,12 @@ fun RemoteAssistScreen(
                             )
                         }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             // Orientation Switcher
                             IconButton(
                                 onClick = { viewModel.toggleRemoteOrientation() },
                                 modifier = Modifier
-                                    .size(30.dp)
+                                    .size(36.dp)
                                     .background(Color(0xFF16253A), CircleShape)
                                     .testTag("toggle_screen_orientation_btn")
                             ) {
@@ -379,7 +379,7 @@ fun RemoteAssistScreen(
                                     imageVector = Icons.Default.ScreenRotation,
                                     contentDescription = "Putar Orientasi",
                                     tint = GuardPrimaryCyan,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
 
@@ -389,7 +389,7 @@ fun RemoteAssistScreen(
                                     viewModel.stopScreenSharing(currentDevice?.name ?: "Perangkat Keluarga")
                                 },
                                 modifier = Modifier
-                                    .size(30.dp)
+                                    .size(36.dp)
                                     .background(Color(0x33EF4444), CircleShape)
                                     .testTag("stop_screen_share_btn")
                             ) {
@@ -397,7 +397,7 @@ fun RemoteAssistScreen(
                                     imageVector = Icons.Default.StopScreenShare,
                                     contentDescription = "Hentikan",
                                     tint = GuardEmergencyRed,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(18.dp)
                                 )
                             }
                         }
@@ -787,7 +787,7 @@ fun PresentationScreenContent(
     isLandscape: Boolean
 ) {
     val slideData = when (currentSlide) {
-        1 -> "RENCANA KEGIATAN KELUARGA 2026" to "1. Pertemuan Rutin Bulanan\n2. Pemeriksaan Kesehatan Orang Tua\n3. Pembagian Tanggung Jawab Keamanan Rumah\n4. Verifikasi Koneksi FamilyGuard"
+        1 -> "RENCANA KEGIATAN KELUARGA 2026" to "1. Pertemuan Rutin Bulanan\n2. Pemeriksaan Kesehatan Orang Tua\n3. Pembagian Tanggung Jawab Keamanan Rumah\n4. Verifikasi Koneksi iDerMata"
         2 -> "LAPORAN RINGKASAN ANGGARAN & BIAYA" to "• Anggaran Pendidikan & Sekolah: 40%\n• Dana Darurat & Asuransi: 25%\n• Operasional & Kebutuhan Rumah: 35%\nStatus: Terkelola Baik & Terenkripsi"
         3 -> "JADWAL LIBURAN KELUARGA" to "Destinasi: Dataran Tinggi Dieng\nTanggal: 12 - 16 Oktober\nTransportasi: Mobil Keluarga\nTitik Kumpul: Rumah Utama Menteng"
         else -> "ARSITEKTUR & SISTEM KEAMANAN" to "• Perlindungan Bilateral dengan Izin QR/PIN\n• Geofence Notifikasi Masuk/Keluar\n• Deteksi Dini Kritis & Bantuan Layar Jarak Jauh"

@@ -300,7 +300,7 @@ fun AnalyticsScreen(
                         IconButton(
                             onClick = {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("FamilyGuard Web URL", webDashboardUrl)
+                                val clip = ClipData.newPlainText("iDerMata Web URL", webDashboardUrl)
                                 clipboard.setPrimaryClip(clip)
                                 copiedToClipboard = true
                             },
