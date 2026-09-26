@@ -364,6 +364,8 @@ private fun RealtimeOpenStreetMap(
         modifier = Modifier.fillMaxSize(),
         factory = { ctx ->
             WebView(ctx).apply {
+                // Gunakan software layer type agar tidak memicu error driver Mesa rendernode di emulator
+                setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
@@ -379,6 +381,13 @@ private fun RealtimeOpenStreetMap(
         },
         update = { webView ->
             webView.loadDataWithBaseURL("https://openstreetmap.org", htmlContent, "text/html", "UTF-8", null)
+        },
+        onRelease = { webView ->
+            try {
+                webView.stopLoading()
+                webView.destroy()
+            } catch (_: Exception) {
+            }
         }
     )
 }

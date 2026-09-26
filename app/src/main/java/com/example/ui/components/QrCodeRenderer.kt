@@ -1,6 +1,7 @@
 package com.example.ui.components
 
-import androidx.compose.foundation.Canvas
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -8,13 +9,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 @Composable
 fun QrCodeRenderer(
@@ -22,48 +27,8 @@ fun QrCodeRenderer(
     modifier: Modifier = Modifier,
     size: Dp = 190.dp
 ) {
-    // Generate deterministic 21x21 QR pattern grid
-    val grid = remember(content) {
-        val n = 21
-        val matrix = Array(n) { BooleanArray(n) }
-
-        // Draw Finder Patterns (7x7 eyes at (0,0), (0, 14), (14, 0))
-        fun drawFinder(startX: Int, startY: Int) {
-            for (r in 0 until 7) {
-                for (c in 0 until 7) {
-                    val isBorder = r == 0 || r == 6 || c == 0 || c == 6
-                    val isInner = r in 2..4 && c in 2..4
-                    matrix[startX + r][startY + c] = isBorder || isInner
-                }
-            }
-        }
-        drawFinder(0, 0)
-        drawFinder(0, 14)
-        drawFinder(14, 0)
-
-        // Timing patterns
-        for (i in 8 until 13) {
-            matrix[6][i] = (i % 2 == 0)
-            matrix[i][6] = (i % 2 == 0)
-        }
-
-        // Pseudo-random deterministic payload bits based on content hash
-        var hash = content.hashCode()
-        for (r in 0 until n) {
-            for (c in 0 until n) {
-                // Avoid overwriting finder areas
-                val inFinder1 = r < 8 && c < 8
-                val inFinder2 = r < 8 && c >= 13
-                val inFinder3 = r >= 13 && c < 8
-                val inTiming = (r == 6 && c in 8..13) || (c == 6 && r in 8..13)
-
-                if (!inFinder1 && !inFinder2 && !inFinder3 && !inTiming) {
-                    hash = (hash * 31 + r * 17 + c * 23)
-                    matrix[r][c] = (hash % 3 == 0 || (r + c) % 3 == 0)
-                }
-            }
-        }
-        matrix
+    val qrBitmap = remember(content) {
+        generateQrBitmap(content, 512, 512)
     }
 
     Box(
@@ -71,24 +36,38 @@ fun QrCodeRenderer(
             .size(size)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
-            .padding(12.dp)
+            .padding(10.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.size(size - 24.dp)) {
-            val n = 21
-            val cellSize = this.size.width / n
-            val darkColor = Color(0xFF09111E)
+        if (qrBitmap != null) {
+            Image(
+                bitmap = qrBitmap.asImageBitmap(),
+                contentDescription = "Kode QR Otorisasi",
+                modifier = Modifier.size(size - 20.dp)
+            )
+        }
+    }
+}
 
-            for (r in 0 until n) {
-                for (c in 0 until n) {
-                    if (grid[r][c]) {
-                        drawRect(
-                            color = darkColor,
-                            topLeft = Offset(c * cellSize, r * cellSize),
-                            size = Size(cellSize * 0.98f, cellSize * 0.98f)
-                        )
-                    }
-                }
+private fun generateQrBitmap(content: String, width: Int, height: Int): Bitmap? {
+    return try {
+        val hints = mapOf(
+            EncodeHintType.CHARACTER_SET to "UTF-8",
+            EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M,
+            EncodeHintType.MARGIN to 1
+        )
+        val bitMatrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, width, height, hints)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val darkColor = android.graphics.Color.parseColor("#09111E")
+        val whiteColor = android.graphics.Color.WHITE
+
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bitmap.setPixel(x, y, if (bitMatrix[x, y]) darkColor else whiteColor)
             }
         }
+        bitmap
+    } catch (_: Exception) {
+        null
     }
 }

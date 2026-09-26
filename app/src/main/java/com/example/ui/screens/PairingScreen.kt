@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
@@ -36,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -60,7 +62,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.PairedDevice
+import com.example.ui.components.QrCameraScannerDialog
 import com.example.ui.components.QrCodeRenderer
+import com.example.ui.components.parseQrPayloadToPin
 import com.example.ui.theme.GuardBorderDark
 import com.example.ui.theme.GuardCardDark
 import com.example.ui.theme.GuardEmergencyRed
@@ -82,6 +86,8 @@ fun PairingScreen(
     var inputDeviceName by remember { mutableStateOf("") }
     var pairingErrorMessage by remember { mutableStateOf<String?>(null) }
     var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
+    var showCameraScanner by remember { mutableStateOf(false) }
+    var scanSuccessMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -206,7 +212,7 @@ fun PairingScreen(
 
                     // QR Code Renderer
                     QrCodeRenderer(
-                        content = "FAMILY_GUARD_PAIRING_PAYLOAD:$myPin:${System.currentTimeMillis()}",
+                        content = "IDERMATA_PAIRING_PAYLOAD:$myPin:${System.currentTimeMillis()}",
                         size = 180.dp,
                         modifier = Modifier.border(2.dp, GuardPrimaryCyan, RoundedCornerShape(18.dp))
                     )
@@ -297,12 +303,138 @@ fun PairingScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Masukkan 6-digit kode PIN yang ditampilkan pada layar HP keluarga/anak yang telah memberi izin.",
+                        text = "Pindai Kode QR langsung dengan kamera HP, atau masukkan 6-digit PIN dari layar HP keluarga yang telah memberi izin.",
                         color = Color(0xFF8B949E),
                         fontSize = 11.sp
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    // Dialog Pemindai Kamera QR
+                    if (showCameraScanner) {
+                        QrCameraScannerDialog(
+                            onQrScanned = { rawPayload ->
+                                val extractedPin = parseQrPayloadToPin(rawPayload)
+                                if (extractedPin != null) {
+                                    inputPin = extractedPin
+                                    if (inputDeviceName.isBlank()) {
+                                        inputDeviceName = "HP Sasaran (${extractedPin.takeLast(4)})"
+                                    }
+                                    pairingErrorMessage = null
+                                    scanSuccessMessage = "Kode QR Berhasil Terdeteksi! PIN: $extractedPin"
+                                    showCameraScanner = false
+                                } else {
+                                    pairingErrorMessage = "Format QR tidak dikenali. Pastikan memindai QR resmi iDerMata."
+                                    showCameraScanner = false
+                                }
+                            },
+                            onDismiss = {
+                                showCameraScanner = false
+                            }
+                        )
+                    }
+
+                    // TOMBOL UTAMA: PINDAI KODE QR KAMERA
+                    Button(
+                        onClick = {
+                            pairingErrorMessage = null
+                            showCameraScanner = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("open_qr_camera_scanner_btn"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF132B45)),
+                        shape = RoundedCornerShape(14.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, GuardPrimaryCyan)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = GuardPrimaryCyan.copy(alpha = 0.25f),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.QrCodeScanner,
+                                        contentDescription = null,
+                                        tint = GuardPrimaryCyan,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Pindai Kode QR Kamera",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                                Text(
+                                    text = "Buka kamera untuk scan QR di HP sasaran",
+                                    color = GuardPrimaryCyan,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+                    }
+
+                    if (scanSuccessMessage != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Surface(
+                            color = Color(0x2210B981),
+                            shape = RoundedCornerShape(10.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, GuardSafeGreen),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = GuardSafeGreen,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = scanSuccessMessage!!,
+                                    color = GuardSafeGreen,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
+                    // Divider Opsi Manual
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Color(0xFF22364F)
+                        )
+                        Text(
+                            text = "  ATAU MASUKKAN PIN MANUAL  ",
+                            color = Color(0xFF8B949E),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Color(0xFF22364F)
+                        )
+                    }
 
                     OutlinedTextField(
                         value = inputDeviceName,
@@ -620,8 +752,8 @@ fun PairingGuideCard(
                 )
                 GuideStepItem(
                     stepNumber = "2",
-                    title = "Masukkan Nama & 6-Digit PIN",
-                    desc = "Ketik nama ponsel keluarga (misal: 'HP Ibu') dan 6-digit PIN yang tertera di layar HP sasaran."
+                    title = "Pindai QR Kamera atau Masukkan PIN",
+                    desc = "Tekan tombol 'Pindai Kode QR Kamera' untuk scan langsung layar HP sasaran, atau ketik 6-digit PIN izin."
                 )
                 GuideStepItem(
                     stepNumber = "3",
