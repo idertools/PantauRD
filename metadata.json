@@ -1,0 +1,8 @@
+{
+  "name": "FamilyGuard",
+  "description": "Aplikasi pemantauan keselamatan keluarga dan pelacakan perangkat resmi dengan izin bilateral QR/PIN, geofencing, peringatan darurat SOS, analitik baterai, dan enkripsi end-to-end.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
